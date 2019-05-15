@@ -28,10 +28,13 @@ defmodule Multix do
   end
 
   @doc """
-  Notify about workers resource.
+  Notify about workers resource. Works as noop, if `Multix` is not running.
   """
   def failure(name, resource) do
-    GenServer.call(name, {:failure, resource})
+    case :ets.whereis(name) do
+      :undefined -> nil
+      _ -> GenServer.call(name, {:failure, resource})
+    end
   end
 
   @doc false

@@ -6,7 +6,7 @@ defmodule Multix.FailureWorker do
   use GenServer
 
   @min_backoff 100
-  @max_backoff 60_000
+  @max_backoff 15_000
 
   defstruct [:name, :resource, :on_failure, :backoff, :ref]
 
