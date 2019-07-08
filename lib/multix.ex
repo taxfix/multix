@@ -15,10 +15,14 @@ defmodule Multix do
   Get available resource.
   """
   def get(name, data \\ nil) do
-    [{@resources, resources, available_resources, %{mod: module, state: state}}] =
-      :ets.lookup(name, @resources)
+    with [{@resources, resources, available_resources, get_spec}] <- lookup_resource(name) do
+      %{mod: module, state: state} = get_spec
+      OnGet.select(module, %{alive: resources, configured: available_resources}, data, state)
+    end
+  end
 
-    OnGet.select(module, %{alive: resources, configured: available_resources}, data, state)
+  defp lookup_resource(name) do
+    :ets.lookup(name, @resources)
   catch
     _, _ -> :error
   end
