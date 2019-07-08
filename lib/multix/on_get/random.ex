@@ -10,7 +10,9 @@ defmodule Multix.OnGet.Random do
   end
 
   @impl true
-  def select(resources, _data, _state) do
+  def select(%{alive: []}, _data, _state), do: nil
+
+  def select(%{alive: resources}, _data, _state) do
     {_, _, micro_secs} = :os.timestamp()
     index = rem(micro_secs, length(resources))
     Enum.at(resources, index)

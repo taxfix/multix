@@ -8,10 +8,11 @@ defmodule Multix.OnGet do
   """
   @type state :: any()
   @type data :: any()
+  @type resource_info :: %{alive: [Multix.resource()], configured: [Multix.resource()]}
 
   @callback init([Multix.resource()]) :: state()
 
-  @callback select([Multix.resource()], data(), state()) :: Multix.resource()
+  @callback select(resource_info(), data(), state()) :: Multix.resource()
 
   def init(module, resources), do: module.init(resources)
 

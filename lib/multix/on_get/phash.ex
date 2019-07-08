@@ -10,7 +10,9 @@ defmodule Multix.OnGet.Phash do
   end
 
   @impl true
-  def select(resources, data, _state) do
+  def select(%{alive: []}, _data, _state), do: nil
+
+  def select(%{alive: resources}, data, _state) do
     index = :erlang.phash2(data, length(resources))
     Enum.at(resources, index)
   end

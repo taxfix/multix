@@ -9,20 +9,16 @@ defmodule Multix do
 
   use GenServer
 
-  @available_resources :available_resources
-  @all_resources :all_resources
+  @resources :resources
 
   @doc """
   Get available resource.
   """
   def get(name, data \\ nil) do
-    case :ets.lookup(name, @available_resources) do
-      [{@available_resources, [], _}] ->
-        nil
+    [{@resources, resources, available_resources, %{mod: module, state: state}}] =
+      :ets.lookup(name, @resources)
 
-      [{@available_resources, resources, %{mod: module, state: state}}] ->
-        OnGet.select(module, resources, data, state)
-    end
+    OnGet.select(module, %{alive: resources, configured: available_resources}, data, state)
   catch
     _, _ -> :error
   end
@@ -68,8 +64,7 @@ defmodule Multix do
     get_spec = %{mod: on_get, state: OnGet.init(on_get, resources)}
 
     :ets.new(name, [:named_table, :public, read_concurrency: true])
-    :ets.insert(name, {@all_resources, resources, nil})
-    :ets.insert(name, {@available_resources, resources, get_spec})
+    :ets.insert(name, {@resources, resources, resources, get_spec})
 
     state = %__MODULE__{
       name: name,
@@ -100,7 +95,7 @@ defmodule Multix do
 
     if resource in available_resources do
       new_available_resources = available_resources -- [resource]
-      :ets.update_element(name, @available_resources, {2, new_available_resources})
+      :ets.update_element(name, @resources, {2, new_available_resources})
       state = start_worker(state, resource)
       {:ok, %__MODULE__{state | available_resources: new_available_resources}}
     else
@@ -124,7 +119,7 @@ defmodule Multix do
     %__MODULE__{name: name, available_resources: available_resources} = state
 
     new_available_resources = [resource | available_resources]
-    :ets.update_element(name, @available_resources, {2, new_available_resources})
+    :ets.update_element(name, @resources, {2, new_available_resources})
 
     state = stop_worker(state, resource)
     %__MODULE__{state | available_resources: new_available_resources}

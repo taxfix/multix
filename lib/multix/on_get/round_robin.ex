@@ -10,7 +10,9 @@ defmodule Multix.OnGet.RoundRobin do
   end
 
   @impl true
-  def select(resources, _data, atomics) do
+  def select(%{alive: []}, _data, _state), do: nil
+
+  def select(%{alive: resources}, _data, atomics) do
     next_index = :atomics.add_get(atomics, 1, 1)
     index = rem(next_index, length(resources))
     Enum.at(resources, index)
