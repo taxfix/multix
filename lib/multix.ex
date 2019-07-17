@@ -21,6 +21,15 @@ defmodule Multix do
     end
   end
 
+  @doc """
+  Get status of resources
+  """
+  def status(name) do
+    with [{@resources, resources, available_resources, _}] <- lookup_resource(name) do
+      %{alive: resources, configured: available_resources}
+    end
+  end
+
   defp lookup_resource(name) do
     :ets.lookup(name, @resources)
   catch
